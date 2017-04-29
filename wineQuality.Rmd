@@ -52,7 +52,7 @@ The distribution of the wine quality appears normal. This Histogram also indicat
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-histogram(WQ$quality, 'fixed.acidity')
+histogram(WQ$fixed.acidity, 'fixed.acidity')
 ```
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 histogram(WQ$volatile.acidity, 'volatile.acidity')
@@ -89,26 +89,26 @@ So we adjust the distribution by using log scale
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(x = residual.sugar, data = WQ)+
   scale_x_continuous(lim = c(0, quantile(WQ$residual.sugar, 0.99)))+
-  scale_y_log10()
-  ggtitle('Histogram of residual.sugar')
+  scale_y_log10()+
+  ggtitle('Histogram of log(residual.sugar)')
 ```
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-p1 <- histogram(WQ$free.sulfur.dioxide, 'free.sulfur.dioxide')+
+p1 <- histogram(WQ$free.sulfur.dioxide, 'log(free.sulfur.dioxide)')+
   scale_x_continuous(lim = c(0, quantile(WQ$free.sulfur.dioxide, 0.99)))+
   scale_y_log10()
 
-p2 <- histogram(WQ$total.sulfur.dioxide, 'total.sulfur.dioxide')+
+p2 <- histogram(WQ$total.sulfur.dioxide, 'log(total.sulfur.dioxide)')+
   scale_x_continuous(lim = c(0, quantile(WQ$free.sulfur.dioxide, 0.99)))+
   scale_y_log10()
 
-p3 <- histogram(WQ$citric.acid, 'citric.acid')+
+p3 <- histogram(WQ$citric.acid, 'log(citric.acid)')+
   scale_x_continuous(lim = c(0, quantile(WQ$citric.acid, 0.99)))+
   scale_y_log10()
 library(gridExtra)
 library(grid)
-grid.arrange(p1, p2, p3, ncol = 1)
+grid.arrange(p1, p2, p3, ncol = 3)
 
 ```
 
