@@ -1,0 +1,281 @@
+---
+title: "wineQuality"
+author: "KennethShang"
+date: "2017年4月25日"
+output: html_document
+---
+# WineQuality Exploration by Chris Saden
+This report explores a dataset containing prices and attributes for red wine. The entire data set contains 1,599 kinds of red wine and 11 variables on the chemical composition of the wine. At least three wine experts rated the quality of each wine, with a score between 0 (very poor) and 10 (very good)
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# load the ggplot graphics package and the others
+library(ggplot2)
+library(GGally)
+library(scales)
+library(memisc)
+
+# Load in the dataset
+WQ <- read.csv("wineQualityReds.csv")
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Define a function to plot histogram
+histogram <- function(feature, text){
+  qplot(x = feature, data = WQ) +
+   ggtitle(paste("Histogram of", text))+
+    xlab(text)
+}
+```
+
+# Univariate Plots Section
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Show the size of the dataset
+dim(WQ)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Show the structure of the dataset
+str(WQ)
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Show the summary of the dataset
+summary(WQ)
+```
+
+Our dataset consists of 13 variables, with almost 20,800 observations.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$quality, 'quality')
+```
+
+The distribution of the wine quality appears normal. This Histogram also indicate that the quality of the wine is a discrete variable and most of the quality given by the experts are 5 and 6.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$quality, 'fixed.acidity')
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$volatile.acidity, 'volatile.acidity')
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$pH, 'pH')
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$sulphates, 'sulphates')
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$residual.sugar, 'residual.sugar')
+```
+
+There are some kinds of red wine which contains a lot of sugar or sulphates and maybe they are outliers. So we change the scale of the residual.sugar and sulphates to replot the diagrams.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = sulphates, data = WQ)+
+  scale_x_continuous(lim = c(0, quantile(WQ$sulphates, 0.99)))+
+  ggtitle('Histogram of sulphates')
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = residual.sugar, data = WQ)+
+  scale_x_continuous(lim = c(0, quantile(WQ$residual.sugar, 0.99)))+
+  ggtitle('Histogram of residual.sugar')
+```
+
+We can see that the distribution of fixed.acidity and residual.sugar are skewed to the left. Most red wine have a lower value of these chemical compositions.
+So we adjust the distribution by using log scale
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = residual.sugar, data = WQ)+
+  scale_x_continuous(lim = c(0, quantile(WQ$residual.sugar, 0.99)))+
+  scale_y_log10()
+  ggtitle('Histogram of residual.sugar')
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+p1 <- histogram(WQ$free.sulfur.dioxide, 'free.sulfur.dioxide')+
+  scale_x_continuous(lim = c(0, quantile(WQ$free.sulfur.dioxide, 0.99)))+
+  scale_y_log10()
+
+p2 <- histogram(WQ$total.sulfur.dioxide, 'total.sulfur.dioxide')+
+  scale_x_continuous(lim = c(0, quantile(WQ$free.sulfur.dioxide, 0.99)))+
+  scale_y_log10()
+
+p3 <- histogram(WQ$citric.acid, 'citric.acid')+
+  scale_x_continuous(lim = c(0, quantile(WQ$citric.acid, 0.99)))+
+  scale_y_log10()
+library(gridExtra)
+library(grid)
+grid.arrange(p1, p2, p3, ncol = 1)
+
+```
+
+It seems that there are no obvious deviation of citric.acid, free.sulfur.dioxide and total.sulfur.dioxide.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = alcohol, data = WQ)+
+  ggtitle('Histogram of alcohol')
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = alcohol, data = WQ, binwidth = 0.1)+
+  ggtitle('Histogram of alcohol')
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+with(WQ, summary(alcohol))
+```
+The highest alcohol content of the red wine in this dataset is 14.9 and the lowest is 8.4.
+
+
+# Univariate Analysis
+### What is the structure of your dataset?
+There are 1,599 diamonds in the dataset with 13 features (X, fixed.acidity, volatile.acidity, citric.acid, residual.sugar, chlorides, free.sulfur.dioxide, total.sulfur.dioxide, density, pH, sulphates, alcohol, quality). The variables quality is ordered factor variables with the following levels.
+
+(worst) —————-> (best)
+
+*quality*: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+
+Other observations:
+* Most wine are have a qulity of 5
+* The wrost red wine have a quilty of 3 and the best have a score of 8
+* The residual.sugar of the red wine are almost less than 8
+* The median alcohol content is 10.2
+
+### What is/are the main feature(s) of interest in your dataset?
+The main features in the data set maybe quality and alcohol. I’d like to determine which features are best for predicting the quality of the red wine. I suspect alcohol and some combination of the other variables can be used to build a predictive model to red wine quality.
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+fixed.acidity, volatile.acidity, citric.acid, chlorides, density, sulphates and alcohol likely contribute to the quality of red wine. I think alcohol and volatile.acidity probably contribute most to the quality.
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+When i investigated into the residual.sugar and sulphates, i found that there maybe some outliers in the dataset. So I use the scale_x_continus() function to remain 0.99 quantile and replot it which seems better.
+
+
+
+# Bivariate Plots Section
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+sub_WQ <- WQ[, c(2, 3, 4, 6, 9, 11, 12, 13)]
+round(cor(sub_WQ), digits = 2)
+```
+
+The quality of a red wine tend to correlate with each other. And the Qulity correlates strongly with alcohol and volatile.acidity. The higher alcohol content by the red wine the better quality the red wine will be and the lower volatile.acidity the red wine contain the better quality the red wine will get.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Use the ggpair function
+
+ggpairs(sub_WQ, lower = list(continuous = wrap("points", shape = I('.'))),
+  upper = list(combo = wrap("box", outlier.shape = I('.'))))
+```
+
+From a subset of the data, fixed.acidity, chlorides, density and sulphates do not seem to have strong correlations with price, but density is moderately correlated with alcohol, and other features have the same situation. I want to look closer at scatter plots involving quality and some other variables like alcohol and colatitle.acidity.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = factor(quality), y = alcohol, data = sub_WQ, geom = 'boxplot')+
+  geom_point(alpha = 1/10, position = 'jitter', color = '#F79420')+
+  ggtitle('Quality by Alcohol')
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = factor(quality), y = volatile.acidity, data = sub_WQ, geom = 'boxplot')+
+  geom_point(alpha = 1/10, position = 'jitter', color = '#F79420')+
+  ggtitle('Quality by volatile.acidity')
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = factor(quality), y = sulphates, data = sub_WQ, geom = 'boxplot')+
+  geom_point(alpha = 1/10, position = 'jitter', color = '#F79420')+
+  ggtitle('Quality by sulphates')+
+  coord_cartesian(ylim = c(0.25, 1))
+```
+
+As the value of alcohol, sulphates increases, the quality of the red wine increases, and with the volatile.acidity decrase the quality of the red wine increases. We still see vertical bands where many red wine take on the same alcohol, sulphates and volatile.acidity value at different quality. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = fixed.acidity, y = density), data = sub_WQ)+
+  geom_point(alpha = 1/4)+
+  scale_x_continuous(lim = c(quantile(sub_WQ$fixed.acidity, 0.01),     
+                             quantile(sub_WQ$fixed.acidity, 0.99)))+
+  xlab('fixed.acidity (tartaric acid - g / dm^3)')+
+  ylab('density (g / cm^3)')+
+  ggtitle('Density by fixed.acidity')
+```
+
+What's more i find that relationship between fixed.acidity and density appears to be linear.
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(RColorBrewer)
+ggplot(aes(x = fixed.acidity, y = density), data = sub_WQ)+
+  geom_point(position = 'jitter', alpha = 0.5, aes( color = quality))+
+  scale_x_continuous(lim = c(quantile(sub_WQ$fixed.acidity, 0.01), 
+                             quantile(sub_WQ$fixed.acidity, 0.99)))+
+  xlab('fixed.acidity (tartaric acid - g / dm^3)')+
+  ylab('density (g / cm^3)')+
+  ggtitle('Density by fixed.acidity and quality')
+```
+
+It seems that at a same fixed.acidity value, higher quality the red wine have lower density it will be.
+# Build a liner model to predict the quality of the red wine
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+m1 <- lm(quality ~ alcohol, data = sub_WQ)
+m2 <- update(m1, ~ . + fixed.acidity)
+m3 <- update(m2, ~ . + sulphates)
+mtable(m1, m2, m3)
+```
+
+In the liner predict model, I find it strange that the coefficients of this three value are positive which is go against with what we showed before. I think this may be cased by the dataset which have not enough data for the quality which is concentrated in the range of 5 to 6. 
+
+
+# Final Plots and Summary
+### Plot One
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = quality, data = WQ)+
+  ggtitle('Histogram of quality')
+```
+
+### Description One
+
+The distribution of the wine quality appears normal. This Histogram also indicate that the quality of the wine is a discrete variable and most of the quality given by the experts are 5 and 6.
+
+### Plot Two
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = fixed.acidity, y = density), data = sub_WQ) +
+  geom_point(position = 'jitter', alpha = 0.5, aes( color = quality))+
+  scale_x_continuous(lim = c(quantile(sub_WQ$fixed.acidity, 0.01),
+                             quantile(sub_WQ$fixed.acidity, 0.99)))+
+  xlab('fixed.acidity (tartaric acid - g / dm^3)')+
+  ylab('density (g / cm^3)')+
+  ggtitle('Density by fixed.acidity and quality')
+```
+
+### Description Two
+
+It seems that at a same fixed.acidity value, higher quality the red wine have lower density it will be.
+
+### Plot Three
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(x = factor(quality), y = alcohol, data = sub_WQ, geom = 'boxplot')+
+  geom_point(alpha = 1/10, position = 'jitter', color = '#F79420')+
+  ggtitle('Quality by Alcohol')
+```
+
+### Description Three
+
+We plot this data by ggplot function with x = alcohol and y = quality. Because the quality of the red wine is score by integer, so we use the parameter position to add a jitter so that we can see the Visualization better and we can see that the alcohol and quality are nearly fit a linear model
+
+### Conclusion
+
+In this project I explore the red wine quality data and finally find the corelation between the quality and other features. The report shows that the quality of the red wine in this dataset corelate most with alcohol and fixed.acidity. 
+There aren't many problems when i went through this project except that when I start to explore the dataset, I found that the variables of this dataset doesn't seems have high relationships with quality after i plot the Bivariate Plots. And all the varibles are continuous variables, so i try to use another way to analysis them by using boxplot. Besides, I try to Discretize the value into different interval so that I can draw a better multivariate plots using color as the lesson taught.
+By the way, in my opinion, we need a larger dataset to comfirm our hypothesis on the dataset so that we can have a better persuasiveness. The next task to continue this work is to searching more data to expend this dataset in order to explore it more accurately.
+
+
+------
+
+# Reflection
+[Diamonds Exploration by Chris Saden](https://s3.amazonaws.com/content.udacity-data.com/courses/ud651/diamondsExample_2016-05.html)
+
