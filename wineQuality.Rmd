@@ -52,18 +52,30 @@ The distribution of the wine quality appears normal. This Histogram also indicat
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-histogram(WQ$fixed.acidity, 'fixed.acidity')
-```
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-histogram(WQ$volatile.acidity, 'volatile.acidity')
-```
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-histogram(WQ$pH, 'pH')
+histogram(WQ$fixed.acidity, 'fixed.acidity')+
+  scale_x_continuous(breaks = seq(4, 16, 1))
 ```
 
+Most of the red wine have a value of fixed.acidity between 6 and 9
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-histogram(WQ$sulphates, 'sulphates')
+histogram(WQ$volatile.acidity, 'volatile.acidity')+
+  scale_x_continuous(breaks = seq(0, 1.6, 0.1))
 ```
+
+Most of the red wine have a value of volatile.acidity between 0.3 and 0.7
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$pH, 'pH')+
+  scale_x_continuous(breaks = seq(0, 4, 0.1))
+```
+
+Most of the red wine have a value of PH between 3.1 and 3.6
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$sulphates, 'sulphates')+
+  scale_x_continuous(breaks = seq(0, 2, 0.1))
+```
+
+Most of the red wine have a value of sulphates between 0.5 and 0.8
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 histogram(WQ$residual.sugar, 'residual.sugar')
 ```
@@ -95,21 +107,21 @@ qplot(x = residual.sugar, data = WQ)+
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-p1 <- histogram(WQ$free.sulfur.dioxide, 'log(free.sulfur.dioxide)')+
+histogram(WQ$free.sulfur.dioxide, 'log(free.sulfur.dioxide)')+
   scale_x_continuous(lim = c(0, quantile(WQ$free.sulfur.dioxide, 0.99)))+
   scale_y_log10()
+```
 
-p2 <- histogram(WQ$total.sulfur.dioxide, 'log(total.sulfur.dioxide)')+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$total.sulfur.dioxide, 'log(total.sulfur.dioxide)')+
   scale_x_continuous(lim = c(0, quantile(WQ$free.sulfur.dioxide, 0.99)))+
   scale_y_log10()
+```
 
-p3 <- histogram(WQ$citric.acid, 'log(citric.acid)')+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+histogram(WQ$citric.acid, 'log(citric.acid)')+
   scale_x_continuous(lim = c(0, quantile(WQ$citric.acid, 0.99)))+
   scale_y_log10()
-library(gridExtra)
-library(grid)
-grid.arrange(p1, p2, p3, ncol = 3)
-
 ```
 
 It seems that there are no obvious deviation of citric.acid, free.sulfur.dioxide and total.sulfur.dioxide.
@@ -178,10 +190,21 @@ qplot(x = factor(quality), y = alcohol, data = sub_WQ, geom = 'boxplot')+
   ggtitle('Quality by Alcohol')
 ```
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+by(WQ$alcohol, WQ$quality, summary)
+```
+As the quality increases, the value of the alcohol increases. We still see when the quality is 5, there is a strange value that the median of the alcohol is less than when the quality is 4 and 6. Beside, in the diagram shown before, we can see that more data concentrated to quality 5 and 6. 
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(x = factor(quality), y = volatile.acidity, data = sub_WQ, geom = 'boxplot')+
   geom_point(alpha = 1/10, position = 'jitter', color = '#F79420')+
   ggtitle('Quality by volatile.acidity')
 ```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+by(WQ$volatile.acidity, WQ$quality, summary)
+```
+As the quality increases, the value of the volatile.acidity decreases. it looks like most of the red wine with good quality has a low volatile.acidity value.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(x = factor(quality), y = sulphates, data = sub_WQ, geom = 'boxplot')+
@@ -189,20 +212,27 @@ qplot(x = factor(quality), y = sulphates, data = sub_WQ, geom = 'boxplot')+
   ggtitle('Quality by sulphates')+
   coord_cartesian(ylim = c(0.25, 1))
 ```
-
-As the value of alcohol, sulphates increases, the quality of the red wine increases, and with the volatile.acidity decrase the quality of the red wine increases. We still see vertical bands where many red wine take on the same alcohol, sulphates and volatile.acidity value at different quality. 
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(aes(x = fixed.acidity, y = density), data = sub_WQ)+
-  geom_point(alpha = 1/4)+
-  scale_x_continuous(lim = c(quantile(sub_WQ$fixed.acidity, 0.01),     
-                             quantile(sub_WQ$fixed.acidity, 0.99)))+
-  xlab('fixed.acidity (tartaric acid - g / dm^3)')+
-  ylab('density (g / cm^3)')+
-  ggtitle('Density by fixed.acidity')
+by(WQ$sulphates, WQ$quality, summary)
 ```
 
-What's more i find that relationship between fixed.acidity and density appears to be linear.
+The trend between sulphates and quality is clearer, with the worst-quality red wine having the largest median and largest range.
+
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+
+quality correlates strongly with alcohol, volatile.acidity and sulphates.
+
+As the value of alcohol, sulphates increases, the quality of the red wine increases, and with the volatile.acidity decrase the quality of the red wine increases.
+
+A good quality red wine have the lowest volatile.acidity and highest sulphates and alcohol value.
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+
+I find that relationship between fixed.acidity and density appears to be linear.
+
+### What was the strongest relationship you found?
+The quality of a red wine is positively and strongly correlated with alcohol. The volatile.acidity also correlated with the quality and is negitively correlated. Either volatile.acidity and alcohol could be used in a model to predict the quality of the red wine.
 
 # Multivariate Plots Section
 
@@ -229,6 +259,18 @@ mtable(m1, m2, m3)
 
 In the liner predict model, I find it strange that the coefficients of this three value are positive which is go against with what we showed before. I think this may be cased by the dataset which have not enough data for the quality which is concentrated in the range of 5 to 6. 
 
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+
+Red wine with better quality tend to be lower density holding fixed.acidity constant. This trend is not as clear when looking at quality vs density and fixed.acidity, but the trend is still present. 
+
+### Were there any interesting or surprising interactions between features?
+Most of the data concentrate to the left side of the "Density by fixed.acidity and quality" graph wich means maybe our dataset is a small sample of the original dataset and isn't well sampling.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+Yes, I created a linear model starting from the quality and the alcohol.
+
+But it seems it don't match well with the dataset for the variables in the linear model account for 30% of the variance in the quality of wine quality.
 
 # Final Plots and Summary
 ### Plot One
@@ -277,5 +319,5 @@ By the way, in my opinion, we need a larger dataset to comfirm our hypothesis on
 ------
 
 # Reflection
-[Diamonds Exploration by Chris Saden](https://s3.amazonaws.com/content.udacity-data.com/courses/ud651/diamondsExample_2016-05.html)
+None
 
